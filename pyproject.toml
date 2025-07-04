@@ -1,0 +1,81 @@
+[build-system]
+requires = ["scikit-build-core>=0.11", "pybind11>=2.13", "setuptools-scm>=8.0"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "lbson"
+dynamic = ["version"]
+description = "High-performance BSON library for Python without MongoDB dependencies"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [
+    {name = "Soju06", email = "qlskssk@gmail.com"},
+]
+maintainers = [
+    {name = "Soju06", email = "qlskssk@gmail.com"},
+]
+keywords = [
+    "bson",
+    "binary-json",
+    "serialization",
+    "encoding",
+    "decoding",
+    "mongodb",
+    "json",
+    "performance",
+    "cpp",
+    "pybind11"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: C++",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Database",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: System :: Archiving :: Compression",
+    "Typing :: Typed",
+]
+
+[project.urls]
+Homepage = "https://github.com/Soju06/lbson"
+Documentation = "https://github.com/Soju06/lbson#readme"
+Repository = "https://github.com/Soju06/lbson.git"
+"Bug Reports" = "https://github.com/Soju06/lbson/issues"
+"Source Code" = "https://github.com/Soju06/lbson"
+
+[project.optional-dependencies]
+dev = [
+    "pybind11-stubgen>=0.16"
+]
+test = [
+    "pytest>=8.4"
+]
+benchmark = [
+    "pymongo>=4.13"
+]
+
+[tool.scikit-build]
+wheel.expand-macos-universal-tags = true
+minimum-version = "build-system.requires"
+cmake.build-type = "Release"
+wheel.packages = ["src/lbson"]
+
+cmake.args = [
+    "-DCMAKE_BUILD_TYPE=Release",
+    "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON"
+]
+
+[tool.scikit-build.cmake.define]
+CMAKE_BUILD_TYPE = "Release"
+
+[tool.setuptools_scm]
+version_scheme = "guess-next-dev"
+local_scheme = "dirty-tag"

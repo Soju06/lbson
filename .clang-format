@@ -1,0 +1,17 @@
+---
+Language: Cpp
+BasedOnStyle: Google
+BraceWrapping:
+  AfterFunction: false
+  AfterControlStatement: Never
+  AfterClass: false
+  AfterStruct: false
+  AfterEnum: false
+  AfterNamespace: false
+  BeforeCatch: false
+  BeforeElse: false
+BreakBeforeBraces: Attach
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ColumnLimit: 120

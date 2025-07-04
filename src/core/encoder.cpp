@@ -3,7 +3,7 @@
 #include <datetime.h>
 
 #include <algorithm>
-#include <charconv>
+#include <cmath>
 #include <unordered_set>
 
 #include "re.hpp"
@@ -125,11 +125,11 @@ int bson_write_object_key(PyObject *obj, bson_encoder_state &state, size_t *out_
         return 0;
     }
     if (obj_type == &PyFloat_Type) {
-        char buf[64];
-        auto [ptr, ec] = std::to_chars(buf, buf + sizeof(buf), PyFloat_AsDouble(obj), std::chars_format::general);
-        if (ec != std::errc{}) throw py::value_error("Failed to convert float to string");
-        state.write(buf, ptr - buf);
-        *out_size = ptr - buf;
+        char buf[16];
+        int len = snprintf(buf, sizeof(buf), "%g", PyFloat_AsDouble(obj));
+        if (len < 0 || len >= sizeof(buf)) throw py::value_error("Failed to convert float to string");
+        state.write(buf, len);
+        *out_size = len;
         return 0;
     }
 

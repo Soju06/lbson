@@ -130,6 +130,50 @@ inline int64_t utc_to_epoch_millis(int year, int month, int day, int hour, int m
     return secs * 1000LL + microsecond / 1000;
 }
 
+inline void civil_from_days(int64_t z, int *year, int *month, int *day) {
+    z += 719468;
+    const int64_t era = (z >= 0 ? z : z - 146096) / 146097;
+    const unsigned doe = (unsigned)(z - era * 146097);                           // [0, 146096]
+    const unsigned yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365;  // [0, 399]
+    const int y = (int)(yoe) + (int)(era) * 400;
+    const unsigned doy = doe - (365 * yoe + yoe / 4 - yoe / 100);  // [0, 365]
+    const unsigned mp = (5 * doy + 2) / 153;                       // [0, 11]
+    const unsigned d = doy - (153 * mp + 2) / 5 + 1;               // [1, 31]
+    const unsigned m = mp + (mp < 10 ? 3 : -9);                    // [1, 12]
+
+    *year = y + (m <= 2);
+    *month = m;
+    *day = d;
+}
+
+inline void epoch_millis_to_civil(int64_t epoch_millis, int *year, int *month, int *day, int *hour, int *minute,
+                                  int *second, int *microsecond) {
+    const int64_t MS_PER_SEC = 1000;
+    const int64_t SEC_PER_DAY = 86400;
+
+    int64_t ms = epoch_millis % MS_PER_SEC;
+    if (ms < 0) {
+        ms += MS_PER_SEC;
+        epoch_millis -= MS_PER_SEC;
+    }
+
+    int64_t secs = epoch_millis / MS_PER_SEC;
+    int64_t days = secs / SEC_PER_DAY;
+    int64_t secs_in_day = secs % SEC_PER_DAY;
+
+    if (secs_in_day < 0) {
+        secs_in_day += SEC_PER_DAY;
+        days -= 1;
+    }
+
+    civil_from_days(days, year, month, day);
+
+    *hour = (int)(secs_in_day / 3600);
+    *minute = (int)((secs_in_day % 3600) / 60);
+    *second = (int)(secs_in_day % 60);
+    *microsecond = (int)(ms * 1000);  // Convert milliseconds to microseconds
+}
+
 /* # of bytes for year, month, day, hour, minute, second, and usecond. */
 inline void unpack_datetime_fast(const unsigned char *p, int *y, int *m, int *d, int *H, int *M, int *S, int *us) {
     *y = (p[0] << 8) | p[1];
@@ -188,18 +232,17 @@ inline void unix_ms_to_iso8601_tz(int64_t ms_since_epoch, int offset_minutes, ch
             abs_min = -abs_min;
         }
 
-        if (!offset_minutes)
-            if (!offset_minutes)
+        if (!offset_minutes) {
 #if PY_VERSION_HEX >= 0x030B0000  // Python 3.11+ supports 'Z' suffix in fromisoformat()
-                snprintf(buffer + len, size - len, ".%03dZ", msec);
+            snprintf(buffer + len, size - len, ".%03dZ", msec);
 #else
-                snprintf(buffer + len, size - len, ".%03d+00:00", msec);
+            snprintf(buffer + len, size - len, ".%03d+00:00", msec);
 #endif
-            else {
-                int off_h = abs_min / 60;
-                int off_m = abs_min % 60;
-                snprintf(buffer + len, size - len, ".%03d%c%02d:%02d", msec, sign, off_h, off_m);
-            }
+        } else {
+            int off_h = abs_min / 60;
+            int off_m = abs_min % 60;
+            snprintf(buffer + len, size - len, ".%03d%c%02d:%02d", msec, sign, off_h, off_m);
+        }
     }
 }
 

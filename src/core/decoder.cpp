@@ -187,11 +187,40 @@ int32_t bson_read_datetime_value(bson_decoder_state &state, PyObject **out_obj) 
             py_obj_ptr tz_utc(PyDateTime_TimeZone_UTC);
             if (!tz_utc) throw std::runtime_error("Failed to get timezone object");
             Py_INCREF(tz_utc.get());
-            py_obj_ptr timestamp_obj(PyFloat_FromDouble(timestamp));
-            if (!timestamp_obj) throw std::runtime_error("Failed to create float object");
-            py_obj_ptr args(Py_BuildValue("(OO)", timestamp_obj.get(), tz_utc.get()));
-            datetime_obj = PyDateTime_FromTimestamp(args.get());
-            break;
+
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+            // Windows CPython doesn't support negative Unix timestamps, so we need to handle them specially
+            if (timestamp < 0) {
+                int year, month, day, hour, minute, second, microsecond;
+                epoch_millis_to_civil(milliseconds, &year, &month, &day, &hour, &minute, &second, &microsecond);
+
+                py_obj_ptr naive_dt(PyDateTime_FromDateAndTime(year, month, day, hour, minute, second, microsecond));
+                if (!naive_dt) throw std::runtime_error("Failed to create datetime object");
+
+                py_obj_ptr replace_method(PyObject_GetAttrString(naive_dt.get(), "replace"));
+                if (!replace_method) throw std::runtime_error("Failed to get replace method");
+
+                // Create keyword arguments for replace(tzinfo=tz_utc)
+                py_obj_ptr kwnames(PyTuple_New(1));
+                if (!kwnames) throw std::runtime_error("Failed to create kwnames tuple");
+
+                auto tzinfo_name = PyUnicode_InternFromString("tzinfo");
+                if (!tzinfo_name) throw std::runtime_error("Failed to create tzinfo string");
+                PyTuple_SET_ITEM(kwnames.get(), 0, tzinfo_name);  // steals reference
+
+                PyObject *args[] = {tz_utc.get()};
+                datetime_obj = PyObject_Vectorcall(replace_method.get(), args, 0, kwnames.get());
+                break;
+            } else {
+#endif
+                py_obj_ptr timestamp_obj(PyFloat_FromDouble(timestamp));
+                if (!timestamp_obj) throw std::runtime_error("Failed to create float object");
+                py_obj_ptr args(Py_BuildValue("(OO)", timestamp_obj.get(), tz_utc.get()));
+                datetime_obj = PyDateTime_FromTimestamp(args.get());
+                break;
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+            }
+#endif
         }
         default:
             throw py::value_error(state.make_error_msg("Unsupported decode mode for datetime",

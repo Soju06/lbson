@@ -2,11 +2,19 @@ import base64
 import datetime
 import math
 import re
+import sys
 import uuid
 
 import pytest
 
 import lbson
+
+
+def patch_utc_isoformat(value: str) -> str:
+    if sys.version_info < (3, 11):
+        return value.replace("Z", "+00:00")
+
+    return value
 
 
 class TestDecodeBasicTypes:
@@ -193,7 +201,7 @@ class TestDecodeBasicTypes:
                 "id": "0657d16c-0733-4f09-ae32-d778a21c062d",
                 "username": "johndoe123",
                 "email": "john.doe@example.com",
-                "created_at": "2023-07-02T15:12:42.000Z",
+                "created_at": patch_utc_isoformat("2023-07-02T15:12:42.000Z"),
                 "profile": {
                     "first_name": "John",
                     "last_name": "Doe",
@@ -218,7 +226,7 @@ class TestDecodeBasicTypes:
                 "id": {"$uuid": "0657d16c-0733-4f09-ae32-d778a21c062d"},
                 "username": "johndoe123",
                 "email": "john.doe@example.com",
-                "created_at": {"$date": "2023-07-02T15:12:42.000Z"},
+                "created_at": {"$date": patch_utc_isoformat("2023-07-02T15:12:42.000Z")},
                 "profile": {
                     "first_name": "John",
                     "last_name": "Doe",
@@ -268,7 +276,7 @@ class TestDecodeBasicTypes:
             "order": {
                 "order_id": "ORD-2023-7845",
                 "customer_id": "1657d16c-0733-4f09-ae32-d778a21c062e",
-                "order_date": "2023-07-01T10:30:01.123Z",
+                "order_date": patch_utc_isoformat("2023-07-01T10:30:01.123Z"),
                 "items": [
                     {
                         "product_id": "PROD-001",
@@ -304,7 +312,7 @@ class TestDecodeBasicTypes:
             "order": {
                 "order_id": "ORD-2023-7845",
                 "customer_id": {"$uuid": "1657d16c-0733-4f09-ae32-d778a21c062e"},
-                "order_date": {"$date": "2023-07-01T10:30:01.123Z"},
+                "order_date": {"$date": patch_utc_isoformat("2023-07-01T10:30:01.123Z")},
                 "items": [
                     {
                         "product_id": "PROD-001",
@@ -384,18 +392,18 @@ class TestDecodeBasicTypes:
                     "email": "alice.smith@example.com",
                 },
                 "tags": ["programming", "database", "mongodb"],
-                "created_at": "2023-07-01T10:30:00.000Z",
-                "updated_at": "2023-07-02T15:45:00.000Z",
+                "created_at": patch_utc_isoformat("2023-07-01T10:30:00.000Z"),
+                "updated_at": patch_utc_isoformat("2023-07-02T15:45:00.000Z"),
                 "comments": [
                     {
                         "user": "bob_wilson",
                         "content": "Great article! Very informative.",
-                        "timestamp": "2023-07-01T11:00:00.000Z",
+                        "timestamp": patch_utc_isoformat("2023-07-01T11:00:00.000Z"),
                     },
                     {
                         "user": "carol_davis",
                         "content": "Thanks for explaining this so clearly!",
-                        "timestamp": "2023-07-01T12:15:00.000Z",
+                        "timestamp": patch_utc_isoformat("2023-07-01T12:15:00.000Z"),
                     },
                 ],
                 "metadata": {"views": 1250, "likes": 45, "reading_time": 8.5},
@@ -417,18 +425,18 @@ class TestDecodeBasicTypes:
                     "email": "alice.smith@example.com",
                 },
                 "tags": ["programming", "database", "mongodb"],
-                "created_at": {"$date": "2023-07-01T10:30:00.000Z"},
-                "updated_at": {"$date": "2023-07-02T15:45:00.000Z"},
+                "created_at": {"$date": patch_utc_isoformat("2023-07-01T10:30:00.000Z")},
+                "updated_at": {"$date": patch_utc_isoformat("2023-07-02T15:45:00.000Z")},
                 "comments": [
                     {
                         "user": "bob_wilson",
                         "content": "Great article! Very informative.",
-                        "timestamp": {"$date": "2023-07-01T11:00:00.000Z"},
+                        "timestamp": {"$date": patch_utc_isoformat("2023-07-01T11:00:00.000Z")},
                     },
                     {
                         "user": "carol_davis",
                         "content": "Thanks for explaining this so clearly!",
-                        "timestamp": {"$date": "2023-07-01T12:15:00.000Z"},
+                        "timestamp": {"$date": patch_utc_isoformat("2023-07-01T12:15:00.000Z")},
                     },
                 ],
                 "metadata": {"views": 1250, "likes": 45, "reading_time": 8.5},

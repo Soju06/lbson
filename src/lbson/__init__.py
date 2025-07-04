@@ -20,8 +20,8 @@ def encode(
     check_circular: bool = True,
     allow_nan: bool = True,
     sort_keys: bool = False,
-    max_depth: int | None = None,
-    max_size: int | None = None,
+    max_depth: typing.Optional[int] = None,
+    max_size: typing.Optional[int] = None,
     **kw,
 ) -> bytes:
     """
@@ -92,7 +92,7 @@ def decode(
     data: bytes,
     *,
     mode: typing.Literal["json", "extended_json", "python"] = "python",
-    max_depth: int | None = None,
+    max_depth: typing.Optional[int] = None,
     **kw,
 ) -> dict:
     """Decode BSON bytes to a Python object.

@@ -189,12 +189,17 @@ inline void unix_ms_to_iso8601_tz(int64_t ms_since_epoch, int offset_minutes, ch
         }
 
         if (!offset_minutes)
-            snprintf(buffer + len, size - len, ".%03dZ", msec);
-        else {
-            int off_h = abs_min / 60;
-            int off_m = abs_min % 60;
-            snprintf(buffer + len, size - len, ".%03d%c%02d:%02d", msec, sign, off_h, off_m);
-        }
+            if (!offset_minutes)
+#if PY_VERSION_HEX >= 0x030B0000  // Python 3.11+ supports 'Z' suffix in fromisoformat()
+                snprintf(buffer + len, size - len, ".%03dZ", msec);
+#else
+                snprintf(buffer + len, size - len, ".%03d+00:00", msec);
+#endif
+            else {
+                int off_h = abs_min / 60;
+                int off_m = abs_min % 60;
+                snprintf(buffer + len, size - len, ".%03d%c%02d:%02d", msec, sign, off_h, off_m);
+            }
     }
 }
 

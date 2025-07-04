@@ -36,7 +36,7 @@
 #endif
 #endif
 
-#if !defined(__LITTLE_ENDIAN__) & !defined(__BIG_ENDIAN__)
+#if !defined(__LITTLE_ENDIAN__) && !defined(__BIG_ENDIAN__)
 #error "UNKNOWN Platform / endianness. Configure endianness checks for this platform or set explicitly."
 #endif
 

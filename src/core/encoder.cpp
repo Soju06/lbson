@@ -251,12 +251,7 @@ int32_t bson_write_datetime_value(PyObject *obj, bson_encoder_state &state, size
     int y, m, d, H, M, S, us;
     unpack_datetime_fast(((_PyDateTime_BaseDateTime *)obj)->data, &y, &m, &d, &H, &M, &S, &us);
 
-#if PY_VERSION_HEX >= 0x030C0000
-    if (((PyDateTime_DateTime *)obj)->hastzinfo && ((PyDateTime_DateTime *)obj)->tzinfo != Py_None)
-#else
-    if (((PyDateTime_DateTime *)obj)->tzinfo != Py_None)
-#endif
-    {
+    if (((PyDateTime_DateTime *)obj)->hastzinfo && ((PyDateTime_DateTime *)obj)->tzinfo != Py_None) {
         PyObject *tzinfo = ((PyDateTime_DateTime *)obj)->tzinfo;
         int64_t off_us = utcoffset_in_us(obj, tzinfo);
         if (off_us == INT64_MIN) throw py::value_error("Failed to get utcoffset");

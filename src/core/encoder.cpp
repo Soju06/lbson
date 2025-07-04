@@ -52,8 +52,13 @@ int32_t bson_write_integer_value(PyObject *obj, bson_encoder_state &state, size_
 int32_t bson_write_float_value(PyObject *obj, bson_encoder_state &state, size_t out_type_offset) {
     double float_value = PyFloat_AsDouble(obj);
 
-    if (!state.options.allow_nan && (std::isnan(float_value) || std::isinf(float_value)))
-        throw py::value_error("Out of range float values are not JSON compliant: " + std::to_string(float_value));
+    if (!state.options.allow_nan) {
+#define ERROR_MESSAGE "Out of range float values are not JSON compliant: "
+        if (std::isnan(float_value)) throw py::value_error(ERROR_MESSAGE "nan");
+        if (std::isinf(float_value))
+            throw py::value_error(float_value > 0 ? ERROR_MESSAGE "inf" : ERROR_MESSAGE "-inf");
+#undef ERROR_MESSAGE
+    }
 
     double converted_value = to_little_endian(float_value);
     state.write(&converted_value, sizeof(double));

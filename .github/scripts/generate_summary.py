@@ -27,8 +27,8 @@ class CISummaryGenerator:
             ("ubuntu-24.04-arm", "arm64", "Ubuntu 24.04 ARM (arm64)"),
             ("windows-2025", "x64", "Windows 2025 (x64)"),
             ("windows-11-arm", "arm64", "Windows 11 ARM (arm64)"),
-            ("macos-15", "x64", "macOS 15 (x64)"),
-            ("macos-15", "arm64", "macOS 15 (arm64)"),
+            ("macos-13", "x64", "macOS 13 (Intel x64)"),
+            ("macos-15", "arm64", "macOS 15 (ARM64)"),
         ]
 
         # Windows ARM64 doesn't support Python 3.9 and 3.10
@@ -141,25 +141,6 @@ class CISummaryGenerator:
 
         return "\n".join(lines)
 
-    def count_total_combinations(self) -> int:
-        """Count total test combinations (excluding unsupported ones)."""
-        total = len(self.python_versions) * len(self.platforms)
-        return total - len(self.unsupported_combinations)
-
-    def generate_coverage_info(self) -> str:
-        """Generate test matrix coverage information."""
-        lines = []
-        lines.append("### 📋 Test Matrix Coverage:")
-        lines.append(f"- **Total test combinations**: {self.count_total_combinations()}")
-
-        for platform, arch, display_name in self.platforms:
-            if platform == "windows-11-arm":
-                lines.append(f"- **{display_name}**: Python 3.11, 3.12, 3.13 (3.9, 3.10 not supported)")
-            else:
-                lines.append(f"- **{display_name}**: Python 3.9, 3.10, 3.11, 3.12, 3.13")
-
-        return "\n".join(lines)
-
     def get_overall_status(self, jobs: List[Dict]) -> Tuple[str, str]:
         """Determine overall status and message."""
         if not jobs:
@@ -210,10 +191,6 @@ class CISummaryGenerator:
 
         # Matrix table
         lines.append(self.generate_matrix_table(jobs))
-        lines.append("")
-
-        # Coverage info
-        lines.append(self.generate_coverage_info())
         lines.append("")
 
         # Overall status

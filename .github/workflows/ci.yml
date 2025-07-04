@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, windows-2025, macos-15, macos-13]
+        os: [ubuntu-24.04, windows-2025, macos-15]
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
         arch: [x64]
         include:
@@ -40,12 +40,6 @@ jobs:
           # Windows ARM64 (Public preview)
           - os: windows-11-arm
             arch: arm64
-            python-version: "3.9"
-          - os: windows-11-arm
-            arch: arm64
-            python-version: "3.10"
-          - os: windows-11-arm
-            arch: arm64
             python-version: "3.11"
           - os: windows-11-arm
             arch: arm64
@@ -53,11 +47,30 @@ jobs:
           - os: windows-11-arm
             arch: arm64
             python-version: "3.13"
+          # macOS ARM64
+          - os: macos-15
+            arch: arm64
+            python-version: "3.9"
+          - os: macos-15
+            arch: arm64
+            python-version: "3.10"
+          - os: macos-15
+            arch: arm64
+            python-version: "3.11"
+          - os: macos-15
+            arch: arm64
+            python-version: "3.12"
+          - os: macos-15
+            arch: arm64
+            python-version: "3.13"
+
 
 
     steps:
     - name: 🔄 Checkout repository
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: 🐍 Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
@@ -86,7 +99,9 @@ jobs:
     - name: 🔧 Install system dependencies (macOS)
       if: startsWith(matrix.os, 'macos')
       run: |
-        brew install cmake
+        brew install gettext --formula
+        brew install cmake --formula
+        brew link --force gettext
 
     - name: 🔧 Install system dependencies (Windows)
       if: startsWith(matrix.os, 'windows')
@@ -119,78 +134,30 @@ jobs:
           .pytest_cache/
           *.log
 
-  # Summary job with table format
+  # Summary job with Python script
   test-summary:
     name: 📊 Test Results Summary
     runs-on: ubuntu-24.04
     needs: [test]
     if: always()
     steps:
-    - name: 📊 Generate test results table
+    - name: 🔄 Checkout repository
+      uses: actions/checkout@v4
+
+    - name: 🐍 Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: 📦 Install dependencies
       run: |
-        echo "## 📊 Test Results Summary" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "| Python Version | ubuntu-24.04 (x64) | ubuntu-24.04-arm (arm64) | windows-2025 (x64) | windows-11-arm (arm64) | macos-15 (arm64) | macos-13 (x64) |" >> $GITHUB_STEP_SUMMARY
-        echo "|----------------|---------------------|---------------------------|---------------------|------------------------|-------------------|-----------------|" >> $GITHUB_STEP_SUMMARY
+        python -m pip install --upgrade pip
+        pip install requests
 
-        # Parse matrix job results
-        RESULTS='${{ toJson(needs.test.result) }}'
-
-        for version in "3.9" "3.10" "3.11" "3.12" "3.13"; do
-          echo -n "| Python $version |" >> $GITHUB_STEP_SUMMARY
-
-          # Show results for each platform
-          # Since GitHub Actions doesn't provide granular matrix results easily,
-          # we'll show the overall status for now
-          for i in {1..6}; do
-            if [[ "${{ needs.test.result }}" == "success" ]]; then
-              echo -n " ✅ |" >> $GITHUB_STEP_SUMMARY
-            elif [[ "${{ needs.test.result }}" == "failure" ]]; then
-              echo -n " ❌ |" >> $GITHUB_STEP_SUMMARY
-            elif [[ "${{ needs.test.result }}" == "cancelled" ]]; then
-              echo -n " ⏸️ |" >> $GITHUB_STEP_SUMMARY
-            elif [[ "${{ needs.test.result }}" == "skipped" ]]; then
-              echo -n " ⏭️ |" >> $GITHUB_STEP_SUMMARY
-            else
-              echo -n " ⏳ |" >> $GITHUB_STEP_SUMMARY
-            fi
-          done
-          echo "" >> $GITHUB_STEP_SUMMARY
-        done
-
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### 📋 Test Matrix Coverage:" >> $GITHUB_STEP_SUMMARY
-        echo "- **Total test combinations**: 30 (5 Python versions × 6 platforms)" >> $GITHUB_STEP_SUMMARY
-        echo "- **Ubuntu 24.04 (x64)**: Python 3.9, 3.10, 3.11, 3.12, 3.13" >> $GITHUB_STEP_SUMMARY
-        echo "- **Ubuntu 24.04 ARM (arm64)**: Python 3.9, 3.10, 3.11, 3.12, 3.13" >> $GITHUB_STEP_SUMMARY
-        echo "- **Windows 2025 (x64)**: Python 3.9, 3.10, 3.11, 3.12, 3.13" >> $GITHUB_STEP_SUMMARY
-        echo "- **Windows 11 ARM (arm64)**: Python 3.9, 3.10, 3.11, 3.12, 3.13" >> $GITHUB_STEP_SUMMARY
-        echo "- **macOS 15 (ARM64/M-series)**: Python 3.9, 3.10, 3.11, 3.12, 3.13" >> $GITHUB_STEP_SUMMARY
-        echo "- **macOS 13 (Intel)**: Python 3.9, 3.10, 3.11, 3.12, 3.13" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-
-        echo "### 🏁 Overall Status:" >> $GITHUB_STEP_SUMMARY
-        echo "- **Test Results**: ${{ needs.test.result }}" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-
-        if [[ "${{ needs.test.result }}" == "success" ]]; then
-          echo "✅ **All tests completed successfully across all platforms!**" >> $GITHUB_STEP_SUMMARY
-          echo "🎉 **Cross-platform compatibility confirmed.**" >> $GITHUB_STEP_SUMMARY
-        elif [[ "${{ needs.test.result }}" == "failure" ]]; then
-          echo "❌ **Some tests failed. Please check individual job results for details.**" >> $GITHUB_STEP_SUMMARY
-          echo "🔍 **Review failed platforms and Python versions for debugging.**" >> $GITHUB_STEP_SUMMARY
-          exit 1
-        elif [[ "${{ needs.test.result }}" == "cancelled" ]]; then
-          echo "⏸️ **Tests were cancelled.**" >> $GITHUB_STEP_SUMMARY
-          exit 1
-        else
-          echo "⏳ **Tests are still running or in an unknown state.**" >> $GITHUB_STEP_SUMMARY
-        fi
-
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### 📖 Legend:" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ **Success**" >> $GITHUB_STEP_SUMMARY
-        echo "- ❌ **Failed**" >> $GITHUB_STEP_SUMMARY
-        echo "- ⏸️ **Cancelled**" >> $GITHUB_STEP_SUMMARY
-        echo "- ⏭️ **Skipped**" >> $GITHUB_STEP_SUMMARY
-        echo "- ⏳ **In Progress/Unknown**" >> $GITHUB_STEP_SUMMARY 
+    - name: 📊 Generate test results summary
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        GITHUB_RUN_ID: ${{ github.run_id }}
+      run: |
+        python .github/scripts/generate_summary.py

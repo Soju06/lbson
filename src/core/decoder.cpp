@@ -51,7 +51,7 @@ int32_t bson_read_int64_value(bson_decoder_state &state, PyObject **out_obj) {
 /* Float Reader */
 
 int32_t bson_read_float_value(bson_decoder_state &state, PyObject **out_obj) {
-    double converted_value = from_little_endian_double(*state.read<double>());
+    double converted_value = from_little_endian(*state.read<double>());
     auto float_obj = PyFloat_FromDouble(converted_value);
     if (!float_obj) throw std::runtime_error("Failed to create float object");
     *out_obj = float_obj;

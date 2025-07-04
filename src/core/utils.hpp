@@ -5,6 +5,10 @@
 
 #include "portable_endian.hpp"
 
+#if PY_VERSION_HEX < 0x030A0000
+#define Py_IsNone(x) Py_Is((x), Py_None)
+#endif
+
 extern PyDateTime_CAPI *g_PyDateTimeAPI;
 
 struct py_obj_deleter {

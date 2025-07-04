@@ -3,6 +3,7 @@
 #include <datetime.h>
 
 #include <algorithm>
+#include <charconv>
 #include <unordered_set>
 
 #include "re.hpp"
@@ -54,7 +55,7 @@ int32_t bson_write_float_value(PyObject *obj, bson_encoder_state &state, size_t 
     if (!state.options.allow_nan && (std::isnan(float_value) || std::isinf(float_value)))
         throw py::value_error("Out of range float values are not JSON compliant: " + std::to_string(float_value));
 
-    double converted_value = to_little_endian_double(float_value);
+    double converted_value = to_little_endian(float_value);
     state.write(&converted_value, sizeof(double));
     if (out_type_offset != SIZE_MAX) state.insert_byte(out_type_offset, bson_type::BSON_TYPE_DOUBLE);
     return sizeof(double);
@@ -250,7 +251,7 @@ int32_t bson_write_datetime_value(PyObject *obj, bson_encoder_state &state, size
     int y, m, d, H, M, S, us;
     unpack_datetime_fast(((_PyDateTime_BaseDateTime *)obj)->data, &y, &m, &d, &H, &M, &S, &us);
 
-#if PY_MAJOR_VERSION >= 3 && PY_MINOR_VERSION >= 12
+#if PY_VERSION_HEX >= 0x030C0000
     if (((PyDateTime_DateTime *)obj)->hastzinfo && ((PyDateTime_DateTime *)obj)->tzinfo != Py_None)
 #else
     if (((PyDateTime_DateTime *)obj)->tzinfo != Py_None)

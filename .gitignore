@@ -92,3 +92,6 @@ test-*-local.ipynb
 *.log
 *.tmp
 *.temp
+
+# Version
+_version.py

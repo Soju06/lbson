@@ -131,6 +131,7 @@ jobs:
         path: |
           .pytest_cache/
           *.log
+        if-no-files-found: ignore
 
   # Summary job with Python script
   test-summary:

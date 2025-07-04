@@ -7,9 +7,10 @@ functionality for Python applications without requiring MongoDB drivers.
 
 import typing
 
-from ._core import DecoderMode, __version__
+from ._core import DecoderMode
 from ._core import decode as _core_decode
 from ._core import encode as _core_encode
+from ._version import __version__, __version_tuple__
 
 
 def encode(
@@ -172,4 +173,4 @@ def decode(
     return _core_decode(data, mode=enc_mode, max_depth=max_depth or 2147483647)
 
 
-__all__ = ["encode", "decode", "__version__"]
+__all__ = ["encode", "decode", "__version__", "__version_tuple__"]

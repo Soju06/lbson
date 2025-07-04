@@ -3,6 +3,7 @@
 [![PyPI version](https://badge.fury.io/py/lbson.svg)](https://badge.fury.io/py/lbson)
 [![Python versions](https://img.shields.io/pypi/pyversions/lbson.svg)](https://pypi.org/project/lbson/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![CI](https://github.com/Soju06/lbson/workflows/CI/badge.svg)](https://github.com/Soju06/lbson/actions/workflows/ci.yml)
 
 A high-performance BSON (Binary JSON) encoding and decoding library for Python, built with C++ for maximum speed. This library enables you to work with BSON data without requiring MongoDB drivers, making it perfect for standalone applications, data processing pipelines, and microservices.
 

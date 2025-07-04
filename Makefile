@@ -1,18 +1,20 @@
-.PHONY: build install test test-fast test-benchmark test-coverage clean help
+.PHONY: install build build-test test clean
 
 generate-stubs:
 	pybind11-stubgen lbson._core --output-dir=src --enum-class-locations DecoderMode:lbson._core
+
+install:
+	pip install -e . -v
 
 build:
 	pip install -e .[dev] -v
 	$(MAKE) generate-stubs
 
-install: build
-
-install-test: build
+build-test:
 	pip install -e .[test] -v
+	$(MAKE) generate-stubs
 
-test: install-test
+test:
 	python -m pytest tests/ -v
 
 clean:

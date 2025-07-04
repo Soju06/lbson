@@ -6,7 +6,9 @@
 #include "portable_endian.hpp"
 
 #if PY_VERSION_HEX < 0x030A0000
-#define Py_IsNone(x) Py_Is((x), Py_None)
+#define Py_IsNone(x) ((x) == Py_None)
+#define Py_IsTrue(x) ((x) == Py_True)
+#define Py_IsFalse(x) ((x) == Py_False)
 #endif
 
 extern PyDateTime_CAPI *g_PyDateTimeAPI;

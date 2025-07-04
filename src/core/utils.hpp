@@ -170,7 +170,7 @@ inline void unix_ms_to_iso8601_tz(int64_t ms_since_epoch, int offset_minutes, ch
     sec += (time_t)offset_minutes * 60;
 
     struct tm tm_loc;
-#ifdef __WINDOWS__
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
     gmtime_s(&tm_loc, &sec);
 #else
     gmtime_r(&sec, &tm_loc);

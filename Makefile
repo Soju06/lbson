@@ -4,7 +4,7 @@ generate-stubs:
 	pybind11-stubgen lbson._core --output-dir=src --enum-class-locations DecoderMode:lbson._core
 
 build:
-	pip install -e . -v
+	pip install -e .[dev] -v
 	$(MAKE) generate-stubs
 
 install: build

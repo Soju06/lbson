@@ -15,7 +15,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang
         -march=native
         -mtune=native
         -flto
-        -ffast-math
         -funroll-loops
         -finline-functions
         -fomit-frame-pointer

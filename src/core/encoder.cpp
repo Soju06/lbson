@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <unordered_set>
 
 #include "re.hpp"
@@ -54,9 +55,9 @@ int32_t bson_write_float_value(PyObject *obj, bson_encoder_state &state, size_t 
 
     if (!state.options.allow_nan) {
 #define ERROR_MESSAGE "Out of range float values are not JSON compliant: "
-        if (std::isnan(float_value)) throw py::value_error(ERROR_MESSAGE "nan");
-        if (std::isinf(float_value))
-            throw py::value_error(float_value > 0 ? ERROR_MESSAGE "inf" : ERROR_MESSAGE "-inf");
+        if (float_value != float_value) throw py::value_error(ERROR_MESSAGE "nan");
+        if (float_value == std::numeric_limits<double>::infinity()) throw py::value_error(ERROR_MESSAGE "inf");
+        if (float_value == -std::numeric_limits<double>::infinity()) throw py::value_error(ERROR_MESSAGE "-inf");
 #undef ERROR_MESSAGE
     }
 

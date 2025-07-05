@@ -2,7 +2,6 @@
 
 #include <stdint.h>
 
-constexpr size_t BSON_MAX_DEPTH = 100;
 constexpr uint8_t BSON_NUL_TERM = 0;
 
 enum class bson_type : int8_t {

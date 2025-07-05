@@ -38,6 +38,7 @@ PYBIND11_MODULE(_core, m) {
     /*
      * BSON decoder mode enum
      */
+
     py::enum_<bson_decoder_mode>(m, "DecoderMode")
         .value("JSON", bson_decoder_mode::JSON)
         .value("EXTENDED_JSON", bson_decoder_mode::EXTENDED_JSON)

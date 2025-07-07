@@ -159,14 +159,14 @@ int32_t bson_read_datetime_value(bson_decoder_state &state, PyObject **out_obj) 
         case bson_decoder_mode::JSON: {
             char buffer[32];
             unix_ms_to_iso8601_tz(milliseconds, 0, buffer, sizeof(buffer));
-            datetime_obj = PyUnicode_FromStringAndSize(buffer, strnlen(buffer, sizeof(buffer)));
+            datetime_obj = PyUnicode_FromStringAndSize(buffer, cstrnlen(buffer, sizeof(buffer)));
             break;
         }
         case bson_decoder_mode::EXTENDED_JSON: {
             auto dict = make_dict();
             char buffer[32];
             unix_ms_to_iso8601_tz(milliseconds, 0, buffer, sizeof(buffer));
-            auto date_str = make_string(buffer, strnlen(buffer, sizeof(buffer)));
+            auto date_str = make_string(buffer, cstrnlen(buffer, sizeof(buffer)));
             dict_set_item(dict.get(), "$date", date_str.get());
             datetime_obj = dict.release();
             break;

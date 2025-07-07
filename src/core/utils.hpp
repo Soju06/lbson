@@ -19,6 +19,12 @@ struct py_obj_deleter {
 
 using py_obj_ptr = std::unique_ptr<PyObject, py_obj_deleter>;
 
+inline size_t cstrnlen(const char *s, size_t max_len) {
+    auto end = static_cast<const char *>(memchr(s, '\0', max_len));
+    if (!end) return max_len;
+    return static_cast<size_t>(end - s);
+}
+
 inline void integer_to_str(int64_t value, char *buffer, size_t *out_size) {
     int index = 0;
     bool sign = true;

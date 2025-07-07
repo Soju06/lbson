@@ -90,7 +90,7 @@ int bson_write_object_key(PyObject *obj, bson_encoder_state &state, size_t *out_
         auto utf8_data = PyUnicode_AsUTF8AndSize(obj, &len);
         if (!utf8_data) throw py::value_error("Invalid UTF-8 string");
 
-        if (strnlen(utf8_data, len) != len) throw py::value_error("Key names must not contain '\\0' characters");
+        if (cstrnlen(utf8_data, len) != len) throw py::value_error("Key names must not contain '\\0' characters");
 
         if (len) state.write(utf8_data, len);
         *out_size = len;

@@ -69,7 +69,7 @@ struct bson_decoder_state {
     inline void read_string(const char **value, size_t *value_size) {
         auto ptr = reinterpret_cast<const char *>(buffer_ + offset);
         auto max_len = buffer_size_ - offset;
-        auto len = strnlen(ptr, max_len);
+        auto len = cstrnlen(ptr, max_len);
         if (len == max_len)
             throw py::value_error(make_error_msg("String not null-terminated", "string extends to end of buffer"));
         *value = ptr;

@@ -48,21 +48,21 @@ struct bson_decoder_state {
 
     inline void skip(size_t size) {
         offset += size;
-        if (UNLIKELY(offset > buffer_size_)) throw py::value_error(make_bounds_error_msg(size));
+        if (offset > buffer_size_) throw py::value_error(make_bounds_error_msg(size));
     }
 
     template <typename T>
     inline const T *read() {
         auto ptr = buffer_ + offset;
         offset += sizeof(T);
-        if (UNLIKELY(offset > buffer_size_)) throw py::value_error(make_bounds_error_msg(sizeof(T)));
+        if (offset > buffer_size_) throw py::value_error(make_bounds_error_msg(sizeof(T)));
         return reinterpret_cast<const T *>(ptr);
     }
 
     inline const uint8_t *read(size_t size) {
         auto ptr = buffer_ + offset;
         offset += size;
-        if (UNLIKELY(offset > buffer_size_)) throw py::value_error(make_bounds_error_msg(size));
+        if (offset > buffer_size_) throw py::value_error(make_bounds_error_msg(size));
         return ptr;
     }
 
@@ -81,7 +81,7 @@ struct bson_decoder_state {
     inline void read_little_endian(T *value) {
         *value = from_little_endian(*reinterpret_cast<const T *>(buffer_ + offset));
         offset += sizeof(T);
-        if (UNLIKELY(offset > buffer_size_)) throw py::value_error(make_bounds_error_msg(sizeof(T)));
+        if (offset > buffer_size_) throw py::value_error(make_bounds_error_msg(sizeof(T)));
     }
 
    private:

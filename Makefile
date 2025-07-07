@@ -14,8 +14,15 @@ build-test:
 	pip install -e .[test] -v
 	$(MAKE) generate-stubs
 
+build-benchmark:
+	pip install -e .[benchmark] -v
+	$(MAKE) generate-stubs
+
 test:
 	python -m pytest tests/ -v
+
+benchmark:
+	cd benchmarks && python benchmark.py
 
 clean:
 	rm -rf build/

@@ -95,3 +95,8 @@ test-*-local.ipynb
 
 # Version
 _version.py
+
+# Benchmarks
+benchmarks/environments/
+benchmarks/results/
+benchmarks/data/

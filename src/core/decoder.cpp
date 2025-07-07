@@ -84,7 +84,7 @@ int32_t bson_read_object_value(bson_decoder_state &state, PyObject **out_obj) {
 
     while (static_cast<uint8_t>(type = *state.read<bson_type>())) {
         state.read_string(&key, &key_len);
-        auto key_obj = make_interned_string(key, key_len);
+        auto key_obj = make_interned_string(key);
 
         // type + key + nul terminator + value
         read_len += sizeof(bson_type) + key_len + 1 + bson_read_value(type, state, &value);
@@ -167,7 +167,7 @@ int32_t bson_read_datetime_value(bson_decoder_state &state, PyObject **out_obj) 
             char buffer[32];
             unix_ms_to_iso8601_tz(milliseconds, 0, buffer, sizeof(buffer));
             auto date_str = make_string(buffer, strnlen(buffer, sizeof(buffer)));
-            dict_set_item(dict.get(), "$date", 5, date_str.get());
+            dict_set_item(dict.get(), "$date", date_str.get());
             datetime_obj = dict.release();
             break;
         }
@@ -236,7 +236,7 @@ int32_t bson_read_objectid_value(bson_decoder_state &state, PyObject **out_obj) 
             break;
         case bson_decoder_mode::EXTENDED_JSON: {
             auto dict = make_dict();
-            dict_set_item(dict.get(), "$oid", 4, objectid_obj.get());
+            dict_set_item(dict.get(), "$oid", objectid_obj.get());
             *out_obj = dict.release();
             break;
         }
@@ -271,9 +271,9 @@ int32_t bson_read_regex_value(bson_decoder_state &state, PyObject **out_obj) {
             // { "$regularExpression": { "pattern": "...", "options": "..." } }
             auto pattern_str = make_string(pattern, pattern_len);
             auto options_str = make_string(flags, flags_len);
-            dict_set_item(regex_dict.get(), "pattern", 7, pattern_str.get());
-            dict_set_item(regex_dict.get(), "options", 7, options_str.get());
-            dict_set_item(dict.get(), "$regularExpression", 18, regex_dict.get());
+            dict_set_item(regex_dict.get(), "pattern", pattern_str.get());
+            dict_set_item(regex_dict.get(), "options", options_str.get());
+            dict_set_item(dict.get(), "$regularExpression", regex_dict.get());
             *out_obj = dict.release();
             break;
         }
@@ -348,9 +348,9 @@ void bson_read_generic_binary_value(bson_subtype subtype, int32_t size, bson_dec
             py_obj_ptr base64_obj(PyUnicode_FromStringAndSize(base64_str.get(), base64_len));
             if (!base64_obj) throw std::runtime_error("Failed to create string object");
             auto sub_type_str = make_string(subtype == bson_subtype::BSON_SUB_SENSITIVE ? "08" : "00", 2);
-            dict_set_item(base64_dict.get(), "base64", 6, base64_obj.get());
-            dict_set_item(base64_dict.get(), "subType", 7, sub_type_str.get());
-            dict_set_item(dict.get(), "$binary", 7, base64_dict.get());
+            dict_set_item(base64_dict.get(), "base64", base64_obj.get());
+            dict_set_item(base64_dict.get(), "subType", sub_type_str.get());
+            dict_set_item(dict.get(), "$binary", base64_dict.get());
             *out_obj = dict.release();
             break;
         }
@@ -384,7 +384,7 @@ void bson_read_uuid_value(bson_decoder_state &state, PyObject **out_obj) {
             char buffer[36];
             format_uuid(uuid, buffer);
             auto uuid_str = make_string(buffer, 36);
-            dict_set_item(dict.get(), "$uuid", 5, uuid_str.get());
+            dict_set_item(dict.get(), "$uuid", uuid_str.get());
             *out_obj = dict.release();
             break;
         }

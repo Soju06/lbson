@@ -31,7 +31,7 @@ inline PyObject *PyUuid_FromUUID(const char uuid[16]) {
 
     py_obj_ptr kwnames(PyTuple_New(1));
     if (!kwnames) return nullptr;
-    auto bytes_obj = make_interned_string("bytes", 5);
+    auto bytes_obj = make_interned_string("bytes");
     PyTuple_SET_ITEM(kwnames.get(), 0, bytes_obj.release());
 
     PyObject *args[1] = {uuid_bytes.get()};

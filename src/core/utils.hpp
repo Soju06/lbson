@@ -252,6 +252,12 @@ inline py_obj_ptr make_dict() {
     return dict;
 }
 
+inline py_obj_ptr make_interned_string(const char *str) {
+    auto str_obj = PyUnicode_InternFromString(str);
+    if (!str_obj) throw std::runtime_error("Failed to create string object");
+    return py_obj_ptr(str_obj);
+}
+
 inline py_obj_ptr make_interned_string(const char *str, size_t len) {
     auto str_obj = PyUnicode_FromStringAndSize(str, len);
     if (!str_obj) throw std::runtime_error("Failed to create string object");
@@ -267,6 +273,11 @@ inline py_obj_ptr make_string(const char *str, size_t len) {
 
 inline void dict_set_item(PyObject *dict, PyObject *key, PyObject *value) {
     if (PyDict_SetItem(dict, key, value) == -1) throw std::runtime_error("Failed to set item");
+}
+
+inline void dict_set_item(PyObject *dict, const char *key, PyObject *value) {
+    auto key_obj = make_interned_string(key);
+    dict_set_item(dict, key_obj.get(), value);
 }
 
 inline void dict_set_item(PyObject *dict, const char *key, size_t key_len, PyObject *value) {

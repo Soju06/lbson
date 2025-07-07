@@ -520,5 +520,5 @@ class TestDecodeExceptions:
             lbson.decode(bytes.fromhex("1a0000000261000f00000048656c6c6f2c20576f726c64210000"))
 
     def test_missing_string_nul_terminator_raises_error(self) -> None:
-        with pytest.raises(ValueError, match="Expected nul terminator"):
+        with pytest.raises(ValueError, match="String not null-terminated"):
             lbson.decode(bytes.fromhex("1a0000000261000e00000048656c6c6f2c20576f726c64210100"))

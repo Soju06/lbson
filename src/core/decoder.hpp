@@ -4,6 +4,7 @@
 
 #include "bson.hpp"
 #include "portable_endian.hpp"
+#include "utils.hpp"
 
 namespace py = pybind11;
 
@@ -46,22 +47,22 @@ struct bson_decoder_state {
     }
 
     inline void skip(size_t size) {
-        if (offset + size > buffer_size_) throw py::value_error(make_bounds_error_msg(size));
         offset += size;
+        if (UNLIKELY(offset > buffer_size_)) throw py::value_error(make_bounds_error_msg(size));
     }
 
     template <typename T>
     inline const T *read() {
-        if (offset + sizeof(T) > buffer_size_) throw py::value_error(make_bounds_error_msg(sizeof(T)));
         auto ptr = buffer_ + offset;
         offset += sizeof(T);
+        if (UNLIKELY(offset > buffer_size_)) throw py::value_error(make_bounds_error_msg(sizeof(T)));
         return reinterpret_cast<const T *>(ptr);
     }
 
     inline const uint8_t *read(size_t size) {
-        if (offset + size > buffer_size_) throw py::value_error(make_bounds_error_msg(size));
         auto ptr = buffer_ + offset;
         offset += size;
+        if (UNLIKELY(offset > buffer_size_)) throw py::value_error(make_bounds_error_msg(size));
         return ptr;
     }
 
@@ -78,20 +79,9 @@ struct bson_decoder_state {
 
     template <typename T>
     inline void read_little_endian(T *value) {
-        if (offset + sizeof(T) > buffer_size_) throw py::value_error(make_bounds_error_msg(sizeof(T)));
         *value = from_little_endian(*reinterpret_cast<const T *>(buffer_ + offset));
         offset += sizeof(T);
-    }
-
-    inline void read_nul_terminator() {
-        if (offset + sizeof(BSON_NUL_TERM) > buffer_size_)
-            throw py::value_error(make_bounds_error_msg(sizeof(BSON_NUL_TERM)));
-        if (buffer_[offset] != BSON_NUL_TERM) {
-            char hex_buf[8];
-            snprintf(hex_buf, sizeof(hex_buf), "0x%02X", buffer_[offset]);
-            throw py::value_error(make_error_msg("Expected nul terminator", "found byte " + std::string(hex_buf)));
-        }
-        offset += sizeof(BSON_NUL_TERM);
+        if (UNLIKELY(offset > buffer_size_)) throw py::value_error(make_bounds_error_msg(sizeof(T)));
     }
 
    private:

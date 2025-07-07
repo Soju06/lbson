@@ -19,12 +19,13 @@ int32_t bson_read_string_value(bson_decoder_state &state, PyObject **out_obj) {
     state.read_little_endian(&str_len);
     if (str_len < 1) throw py::value_error(state.make_error_msg("Invalid string length", std::to_string(str_len)));
 
-    auto str_ptr = reinterpret_cast<const char *>(state.read(str_len - 1));
-    state.read_nul_terminator();
+    auto str_ptr = reinterpret_cast<const char *>(state.read(str_len));
 
-    auto str_obj = PyUnicode_FromStringAndSize(str_ptr, str_len - 1);
-    if (!str_obj) throw std::runtime_error("Failed to create string object");
-    *out_obj = str_obj;
+    if (str_ptr[str_len - 1] != '\0')
+        throw py::value_error(state.make_error_msg("String not null-terminated", "string extends to end of buffer"));
+
+    *out_obj = PyUnicode_FromStringAndSize(str_ptr, str_len - 1);
+    if (!*out_obj) throw std::runtime_error("Failed to create string object");
     return sizeof(int32_t) + str_len;
 }
 
@@ -33,18 +34,16 @@ int32_t bson_read_string_value(bson_decoder_state &state, PyObject **out_obj) {
 int32_t bson_read_int32_value(bson_decoder_state &state, PyObject **out_obj) {
     int32_t int_value;
     state.read_little_endian(&int_value);
-    auto int_obj = PyLong_FromLong(int_value);
-    if (!int_obj) throw std::runtime_error("Failed to create integer object");
-    *out_obj = int_obj;
+    *out_obj = PyLong_FromLong(int_value);
+    if (!*out_obj) throw std::runtime_error("Failed to create integer object");
     return sizeof(int32_t);
 }
 
 int32_t bson_read_int64_value(bson_decoder_state &state, PyObject **out_obj) {
     int64_t int_value;
     state.read_little_endian(&int_value);
-    auto int_obj = PyLong_FromLongLong(int_value);
-    if (!int_obj) throw std::runtime_error("Failed to create integer object");
-    *out_obj = int_obj;
+    *out_obj = PyLong_FromLongLong(int_value);
+    if (!*out_obj) throw std::runtime_error("Failed to create integer object");
     return sizeof(int64_t);
 }
 
@@ -52,23 +51,16 @@ int32_t bson_read_int64_value(bson_decoder_state &state, PyObject **out_obj) {
 
 int32_t bson_read_float_value(bson_decoder_state &state, PyObject **out_obj) {
     double converted_value = from_little_endian(*state.read<double>());
-    auto float_obj = PyFloat_FromDouble(converted_value);
-    if (!float_obj) throw std::runtime_error("Failed to create float object");
-    *out_obj = float_obj;
+    *out_obj = PyFloat_FromDouble(converted_value);
+    if (!*out_obj) throw std::runtime_error("Failed to create float object");
     return sizeof(double);
 }
 
 /* Boolean Reader */
 
 int32_t bson_read_boolean_value(bson_decoder_state &state, PyObject **out_obj) {
-    auto boolean_value = *state.read<uint8_t>();
-    if (boolean_value == 0) {
-        *out_obj = Py_False;
-        Py_INCREF(Py_False);
-    } else {
-        *out_obj = Py_True;
-        Py_INCREF(Py_True);
-    }
+    *out_obj = *state.read<uint8_t>() ? Py_True : Py_False;
+    Py_INCREF(*out_obj);
     return 1;
 }
 
@@ -82,8 +74,7 @@ int32_t bson_read_object_value(bson_decoder_state &state, PyObject **out_obj) {
     state.read_little_endian(&obj_len);
     if (obj_len < 0) throw py::value_error(state.make_error_msg("Invalid object length", std::to_string(obj_len)));
 
-    py_obj_ptr obj(PyDict_New());
-    if (!obj) throw std::runtime_error("Failed to create dict object");
+    auto obj = make_dict();
     auto obj_ptr = obj.get();
 
     bson_type type;
@@ -134,7 +125,6 @@ int32_t bson_read_array_value(bson_decoder_state &state, PyObject **out_obj) {
     const char *key;
     size_t key_len;
     PyObject *value;
-    Py_ssize_t array_size = 0;
 
     while (static_cast<uint8_t>(type = *state.read<bson_type>())) {
         state.read_string(&key, &key_len);
@@ -147,7 +137,6 @@ int32_t bson_read_array_value(bson_decoder_state &state, PyObject **out_obj) {
         }
 
         Py_DECREF(value);
-        array_size++;
     }
 
     if (read_len != obj_len)
@@ -311,12 +300,12 @@ int32_t bson_read_binary_value(bson_decoder_state &state, PyObject **out_obj) {
     auto subtype = *state.read<bson_subtype>();
 
     switch (subtype) {
+        case bson_subtype::BSON_SUB_UUID:
+            bson_read_uuid_value(state, out_obj);
+            break;
         case bson_subtype::BSON_SUB_GENERIC:
         case bson_subtype::BSON_SUB_SENSITIVE:
             bson_read_generic_binary_value(subtype, size, state, out_obj);
-            break;
-        case bson_subtype::BSON_SUB_UUID:
-            bson_read_uuid_value(state, out_obj);
             break;
         // deprecated types
         case bson_subtype::__BSON_SUB_BINARY_OLD:
@@ -412,10 +401,6 @@ void bson_read_uuid_value(bson_decoder_state &state, PyObject **out_obj) {
 
 int32_t bson_read_value(bson_type type, bson_decoder_state &state, PyObject **out_obj) {
     switch (type) {
-        case bson_type::BSON_TYPE_NULL:
-            *out_obj = Py_None;
-            Py_INCREF(Py_None);
-            return 0;
         case bson_type::BSON_TYPE_STRING:
             return bson_read_string_value(state, out_obj);
         case bson_type::BSON_TYPE_INT32:
@@ -430,6 +415,10 @@ int32_t bson_read_value(bson_type type, bson_decoder_state &state, PyObject **ou
             return bson_read_object_value(state, out_obj);
         case bson_type::BSON_TYPE_ARRAY:
             return bson_read_array_value(state, out_obj);
+        case bson_type::BSON_TYPE_NULL:
+            *out_obj = Py_None;
+            Py_INCREF(Py_None);
+            return 0;
         case bson_type::BSON_TYPE_BINARY:
             return bson_read_binary_value(state, out_obj);
         case bson_type::BSON_TYPE_UTC_DATETIME:

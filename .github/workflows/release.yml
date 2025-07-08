@@ -44,7 +44,6 @@ jobs:
           CIBW_ARCHS_WINDOWS: ${{ matrix.arch == 'x64' && 'AMD64' || 'ARM64' }}
           CIBW_BEFORE_BUILD: >
             python -m pip install -U pip setuptools wheel scikit-build-core[pyproject]>=0.11 pybind11>=2.13 setuptools_scm>=8 cmake
-            python -m setuptools_scm --force-write-version-files
 
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_COMMAND: >

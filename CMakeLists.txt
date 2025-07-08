@@ -40,6 +40,14 @@ endif()
 find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
 find_package(pybind11 CONFIG REQUIRED)
 
+execute_process(
+    COMMAND ${Python_EXECUTABLE} -m setuptools_scm --force-write-version-files
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    RESULT_VARIABLE SETUPTOOLS_SCM_RESULT
+    OUTPUT_QUIET
+    ERROR_QUIET
+)
+
 file(GLOB CORE_SOURCES "src/core/*.cpp" "src/core/*.c")
 python_add_library(_core MODULE ${CORE_SOURCES} WITH_SOABI)
 target_link_libraries(_core PRIVATE pybind11::headers)
@@ -58,3 +66,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
 endif()
 
 install(TARGETS _core DESTINATION lbson)
+
+if(EXISTS ${CMAKE_SOURCE_DIR}/src/lbson/_version.py)
+    install(FILES src/lbson/_version.py DESTINATION lbson)
+endif()

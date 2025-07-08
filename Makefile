@@ -1,4 +1,4 @@
-.PHONY: install build build-test test clean
+.PHONY: install build build-test test clean wheel
 
 generate-stubs:
 	pybind11-stubgen lbson._core --output-dir=src --enum-class-locations DecoderMode:lbson._core
@@ -20,6 +20,9 @@ build-benchmark:
 
 test:
 	python -m pytest tests/ -v
+
+wheel:
+	python -m build --wheel
 
 benchmark:
 	cd benchmarks && python benchmark.py

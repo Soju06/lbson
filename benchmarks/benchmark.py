@@ -187,7 +187,6 @@ def run_benchmark(selected_envs: list[str] | None = None) -> None:
                 str(current_dir / f"runner_{env_name}.py"),
                 "-o",
                 str(output_file),
-                "--tracemalloc",
                 *sys.argv[1:],
             ]
         )

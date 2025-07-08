@@ -74,7 +74,7 @@ def _install_local_lbson(env_name: str) -> None:
         raise FileNotFoundError("pyproject.toml not found in project root")
 
     _run_command([str(python), "-m", "pip", "install", "--upgrade", "pip"])
-    _run_command([str(python), "-m", "pip", "install", "-e", str(project_root)], cwd=str(project_root))
+    _run_command([str(python), "-m", "pip", "install", "-e", str(project_root)], cwd=project_root)
 
 
 def setup_environment(env_name: str) -> None:

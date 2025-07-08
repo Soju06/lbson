@@ -2,6 +2,7 @@ import datetime
 import math
 import re
 import uuid
+from typing import Any
 
 import pytest
 
@@ -229,7 +230,7 @@ class TestEncodeOptions:
             lbson.encode({"key": "value", (1, 2): "tuple"}, skipkeys=False)
 
     def test_circular_reference(self) -> None:
-        data = {"key": "value"}
+        data: dict[str, Any] = {"key": "value"}
         data["self"] = data
 
         with pytest.raises(ValueError, match="Circular reference detected"):

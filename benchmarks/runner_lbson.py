@@ -1,3 +1,5 @@
+from typing import Any
+
 from runner import BSONModule, run
 
 
@@ -8,11 +10,11 @@ class LbsonModule(BSONModule):
         self.encoder = lbson.encode
         self.decoder = lbson.decode
 
-    def encode(self, data: dict) -> bytes:
+    def encode(self, data: dict[str, Any]) -> bytes:
         # A little trick like the check_circular flag is fine, right?
         return self.encoder(data, check_circular=False)
 
-    def decode(self, data: bytes) -> dict:
+    def decode(self, data: bytes) -> dict[str, Any]:
         return self.decoder(data)
 
 

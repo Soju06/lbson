@@ -1,3 +1,5 @@
+from typing import Any
+
 from runner import BSONModule, run
 
 
@@ -8,10 +10,10 @@ class BsonModule(BSONModule):
         self.encoder = bson.dumps
         self.decoder = bson.loads
 
-    def encode(self, data: dict) -> bytes:
+    def encode(self, data: dict[str, Any]) -> bytes:
         return self.encoder(data)
 
-    def decode(self, data: bytes) -> dict:
+    def decode(self, data: bytes) -> dict[str, Any]:
         return self.decoder(data)
 
 

@@ -487,7 +487,10 @@ class TestDecodeBasicTypes:
 class TestDecodeOptions:
     def test_mode(self) -> None:
         with pytest.raises(ValueError, match="Invalid mode: invalid"):
-            lbson.decode(bytes.fromhex("070000000a0000"), mode="invalid")
+            lbson.decode(
+                bytes.fromhex("070000000a0000"),
+                mode="invalid",  # type: ignore
+            )
 
     def test_max_depth(self) -> None:
         assert lbson.decode(

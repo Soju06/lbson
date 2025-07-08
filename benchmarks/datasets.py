@@ -136,7 +136,7 @@ def generate_nested_document(target_size: int, max_depth: int = 5) -> dict[str, 
 
 
 def generate_array_heavy_document(target_size: int) -> dict[str, Any]:
-    doc = {
+    doc: dict[str, Any] = {
         "id": str(uuid.uuid4()),
         "type": "array_heavy",
         "created": datetime.now().isoformat(),

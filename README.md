@@ -250,27 +250,21 @@ Decode BSON bytes to a Python object.
 git clone https://github.com/Soju06/lbson.git
 cd python-bson
 
-# Install build dependencies
-pip install scikit-build-core>=0.11 pybind11>=2.13
-
-# Build and install
-pip install .
-
-# Or for development
-pip install -e .
+# Install lbson
+make install
 ```
 
 ### Development Setup
 
 ```bash
-# Install development dependencies
-pip install -e ".[dev]"
+# Install development build dependencies
+make build
 
 # Run tests
-python -m pytest
+make test
 
 # Run benchmarks
-python benchmarks/run_benchmarks.py
+make benchmark
 ```
 
 ## 📊 Performance

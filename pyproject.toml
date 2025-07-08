@@ -53,7 +53,10 @@ Repository = "https://github.com/Soju06/lbson.git"
 
 [project.optional-dependencies]
 dev = [
-    "pybind11-stubgen>=0.16"
+    "pybind11-stubgen>=0.16",
+    "pytest>=8.4",
+    "orjson>=3.10",
+    "psutil>=7",
 ]
 test = [
     "pybind11-stubgen>=0.16",

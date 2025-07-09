@@ -48,18 +48,35 @@ class CISummaryGenerator:
         }
 
     def fetch_job_results(self) -> List[Dict]:
-        """Fetch job results from GitHub API."""
+        """Fetch job results from GitHub API with pagination support."""
         if not all([self.github_token, self.repository, self.run_id]):
             print("Warning: Missing GitHub environment variables, using mock data")
             return []
 
-        url = f"https://api.github.com/repos/{self.repository}/actions/runs/{self.run_id}/jobs"
         headers = {"Authorization": f"Bearer {self.github_token}", "Accept": "application/vnd.github.v3+json"}
+        all_jobs = []
+        url = f"https://api.github.com/repos/{self.repository}/actions/runs/{self.run_id}/jobs?per_page=100"
 
         try:
-            response = requests.get(url, headers=headers, timeout=30)
-            response.raise_for_status()
-            return response.json().get("jobs", [])
+            while url:
+                response = requests.get(url, headers=headers, timeout=30)
+                response.raise_for_status()
+                data = response.json()
+
+                jobs = data.get("jobs", [])
+                all_jobs.extend(jobs)
+
+                # Check for next page
+                url = None
+                if "Link" in response.headers:
+                    links = response.headers["Link"]
+                    for link in links.split(","):
+                        if 'rel="next"' in link:
+                            url = link.split(";")[0].strip("<> ") + f"&per_page=100"
+                            break
+
+            print(f"Fetched {len(all_jobs)} total jobs")
+            return all_jobs
         except Exception as e:
             print(f"Error fetching job results: {e}")
             return []

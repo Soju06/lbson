@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, windows-2025, macos-13]
+        os: [ubuntu-24.04, windows-2025, macos-13, macos-14, macos-15]
         arch: [x64]
         include:
           # Ubuntu ARM64 (Public preview)
@@ -47,7 +47,7 @@ jobs:
 
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_COMMAND: >
-            python -c "import lbson; print('✅ Import successful')" &&
+            python -c "import lbson; print('Import successful')" &&
             python -m pytest {project}/tests/ -v
 
       - name: 📦 Upload wheels

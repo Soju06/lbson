@@ -16,17 +16,25 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, windows-2025, macos-13, macos-14, macos-15]
-        arch: [x64]
-        include:
-          # Ubuntu ARM64 (Public preview)
+        os:
+          [
+            ubuntu-24.04,
+            ubuntu-24.04-arm,
+            windows-2025,
+            windows-11-arm,
+            macos-15,
+          ]
+        arch: [x64, arm64]
+        exclude:
+          # x64 combinations not supported
           - os: ubuntu-24.04-arm
-            arch: arm64
-          # Windows ARM64 (Public preview)
+            arch: x64
           - os: windows-11-arm
+            arch: x64
+          # arm64 combinations not supported
+          - os: ubuntu-24.04
             arch: arm64
-          # macOS ARM64
-          - os: macos-15
+          - os: windows-2025
             arch: arm64
 
     steps:

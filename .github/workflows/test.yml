@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -17,121 +17,101 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, windows-2025, macos-13]
+        os:
+          [
+            ubuntu-24.04,
+            ubuntu-24.04-arm,
+            windows-2025,
+            windows-11-arm,
+            macos-13,
+            macos-14,
+            macos-15,
+          ]
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
-        arch: [x64]
-        include:
-          # Ubuntu ARM64 (Public preview)
+        arch: [x64, arm64]
+        exclude:
+          # x64 combinations not supported
           - os: ubuntu-24.04-arm
+            arch: x64
+          - os: windows-11-arm
+            arch: x64
+          # arm64 combinations not supported
+          - os: ubuntu-24.04
             arch: arm64
+          - os: windows-2025
+            arch: arm64
+          # Windows ARM64 older Python versions not supported
+          - os: windows-11-arm
             python-version: "3.9"
-          - os: ubuntu-24.04-arm
-            arch: arm64
+          - os: windows-11-arm
             python-version: "3.10"
-          - os: ubuntu-24.04-arm
-            arch: arm64
-            python-version: "3.11"
-          - os: ubuntu-24.04-arm
-            arch: arm64
-            python-version: "3.12"
-          - os: ubuntu-24.04-arm
-            arch: arm64
-            python-version: "3.13"
-          # Windows ARM64 (Public preview)
-          - os: windows-11-arm
-            arch: arm64
-            python-version: "3.11"
-          - os: windows-11-arm
-            arch: arm64
-            python-version: "3.12"
-          - os: windows-11-arm
-            arch: arm64
-            python-version: "3.13"
-          # macOS ARM64
-          - os: macos-15
-            arch: arm64
-            python-version: "3.9"
-          - os: macos-15
-            arch: arm64
-            python-version: "3.10"
-          - os: macos-15
-            arch: arm64
-            python-version: "3.11"
-          - os: macos-15
-            arch: arm64
-            python-version: "3.12"
-          - os: macos-15
-            arch: arm64
-            python-version: "3.13"
-
-
 
     steps:
-    - name: 🔄 Checkout repository
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - name: 🔄 Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: 🐍 Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
-        architecture: ${{ matrix.arch }}
+      - name: 🐍 Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: ${{ matrix.arch }}
 
-    - name: 📦 Cache pip dependencies
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.cache/pip
-          ~/AppData/Local/pip/Cache
-          ~/Library/Caches/pip
-        key: ${{ runner.os }}-${{ matrix.arch }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}
-        restore-keys: |
-          ${{ runner.os }}-${{ matrix.arch }}-pip-${{ matrix.python-version }}-
-          ${{ runner.os }}-${{ matrix.arch }}-pip-
+      - name: 📦 Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pip
+            ~/AppData/Local/pip/Cache
+            ~/Library/Caches/pip
+          key: ${{ runner.os }}-${{ matrix.arch }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.arch }}-pip-${{ matrix.python-version }}-
+            ${{ runner.os }}-${{ matrix.arch }}-pip-
 
-    - name: 🔧 Install system dependencies (Linux)
-      if: startsWith(matrix.os, 'ubuntu')
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential cmake
+      - name: 🔧 Install system dependencies (Linux)
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake
 
-    - name: 🔧 Install system dependencies (macOS)
-      if: startsWith(matrix.os, 'macos')
-      run: |
-        brew install cmake --formula
+      - name: 🔧 Install system dependencies (macOS)
+        if: startsWith(matrix.os, 'macos')
+        run: |
+          brew install cmake --formula
 
-    - name: 🔧 Install system dependencies (Windows)
-      if: startsWith(matrix.os, 'windows')
-      run: |
-        choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
-        choco install make
+      - name: 🔧 Install system dependencies (Windows)
+        if: startsWith(matrix.os, 'windows')
+        run: |
+          choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
+          choco install make
 
-    - name: ⬆️ Upgrade pip
-      run: |
-        python -m pip install --upgrade pip
+      - name: ⬆️ Upgrade pip
+        run: |
+          python -m pip install --upgrade pip
 
-    - name: 🏗️ Build package
-      run: |
-        make build-test
+      - name: 🏗️ Build package
+        run: |
+          make build-test
 
-    - name: ✅ Test import
-      run: |
-        python -c "import lbson; print('Import successful')"
+      - name: ✅ Test import
+        run: |
+          python -c "import lbson; print('Import successful')"
 
-    - name: 🧪 Run tests
-      run: |
-        make test
+      - name: 🧪 Run tests
+        run: |
+          make test
 
-    - name: 📊 Upload test results
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: test-results-${{ matrix.os }}-${{ matrix.arch }}-py${{ matrix.python-version }}
-        path: |
-          .pytest_cache/
-          *.log
-        if-no-files-found: ignore
+      - name: 📊 Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ matrix.os }}-${{ matrix.arch }}-py${{ matrix.python-version }}
+          path: |
+            .pytest_cache/
+            *.log
+          if-no-files-found: ignore
 
   # Summary job with Python script
   test-summary:
@@ -140,23 +120,23 @@ jobs:
     needs: [test]
     if: always()
     steps:
-    - name: 🔄 Checkout repository
-      uses: actions/checkout@v4
+      - name: 🔄 Checkout repository
+        uses: actions/checkout@v4
 
-    - name: 🐍 Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-    - name: 📦 Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install requests
+      - name: 📦 Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
 
-    - name: 📊 Generate test results summary
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-        GITHUB_REPOSITORY: ${{ github.repository }}
-        GITHUB_RUN_ID: ${{ github.run_id }}
-      run: |
-        python .github/scripts/generate_summary.py
+      - name: 📊 Generate test results summary
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+        run: |
+          python .github/scripts/generate_summary.py

@@ -76,6 +76,10 @@ wheel.expand-macos-universal-tags = true
 wheel.packages = ["src/lbson"]
 wheel.cmake = true
 
+sdist.include = [
+    "src/lbson/_version.py",
+]
+
 [tool.setuptools_scm]
 write_to = "src/lbson/_version.py"
 version_scheme = "release-branch-semver"

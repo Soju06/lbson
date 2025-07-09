@@ -28,11 +28,24 @@ class CISummaryGenerator:
             ("windows-2025", "x64", "Windows 2025 (x64)"),
             ("windows-11-arm", "arm64", "Windows 11 ARM (arm64)"),
             ("macos-13", "x64", "macOS 13 (Intel x64)"),
+            ("macos-13", "arm64", "macOS 13 (ARM64)"),
+            ("macos-14", "x64", "macOS 14 (Intel x64)"),
+            ("macos-14", "arm64", "macOS 14 (ARM64)"),
+            ("macos-15", "x64", "macOS 15 (Intel x64)"),
             ("macos-15", "arm64", "macOS 15 (ARM64)"),
         ]
 
-        # Windows ARM64 doesn't support Python 3.9 and 3.10
-        self.unsupported_combinations = {("windows-11-arm", "3.9"), ("windows-11-arm", "3.10")}
+        # Unsupported combinations based on workflow matrix excludes
+        self.unsupported_combinations = {
+            # Windows ARM64 doesn't support Python 3.9 and 3.10
+            ("windows-11-arm", "arm64", "3.9"),
+            ("windows-11-arm", "arm64", "3.10"),
+            # macOS 14 and 15 x64 don't support Python 3.9 and 3.10
+            ("macos-14", "x64", "3.9"),
+            ("macos-14", "x64", "3.10"),
+            ("macos-15", "x64", "3.9"),
+            ("macos-15", "x64", "3.10"),
+        }
 
     def fetch_job_results(self) -> List[Dict]:
         """Fetch job results from GitHub API."""
@@ -85,7 +98,7 @@ class CISummaryGenerator:
     def get_job_status(self, jobs: List[Dict], platform: str, arch: str, python_version: str) -> str:
         """Get the status of a specific job combination."""
         # Check if this combination is unsupported
-        if (platform, python_version) in self.unsupported_combinations:
+        if (platform, arch, python_version) in self.unsupported_combinations:
             return "not_supported"
 
         for job in jobs:

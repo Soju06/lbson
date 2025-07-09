@@ -156,7 +156,7 @@ jobs:
           echo "" >> release_notes.md
           echo "### 📦 Installation" >> release_notes.md
           echo '```bash' >> release_notes.md
-          echo 'pip install lbson' >> release_notes.md
+          echo 'pip install lbson-py' >> release_notes.md
           echo '```' >> release_notes.md
 
           # Set output

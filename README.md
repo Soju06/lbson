@@ -269,7 +269,71 @@ make benchmark
 
 ## 📊 Performance
 
-Coming soon...
+<img src="benchmarks/images/roundtrip_avg_throughput.png">
+
+| Operation   | Benchmark                       |   lbson (ops/s) |   PyMongo (ops/s) |   bson (ops/s) | lbson vs PyMongo   | lbson vs bson   |
+|-------------|---------------------------------|-----------------|-------------------|----------------|--------------------|-----------------|
+| roundtrip   | encode_decode_10kb_array_heavy  |           12472 |              6153 |            370 | 2.03× faster       | 33.71× faster   |
+| roundtrip   | encode_decode_1mb_array_heavy   |             194 |                96 |              6 | 2.02× faster       | 32.33× faster   |
+| roundtrip   | encode_decode_100kb_array_heavy |            1904 |               962 |             58 | 1.98× faster       | 32.83× faster   |
+| roundtrip   | encode_decode_1kb_array_heavy   |           48360 |             25224 |           1493 | 1.92× faster       | 32.39× faster   |
+| roundtrip   | encode_decode_10mb_array_heavy  |              17 |                 9 |              1 | 1.89× faster       | 17.00× faster   |
+
+<details>
+<summary>Benchmark Details</summary>
+
+<img src="benchmarks/images/encode_avg_throughput.png">
+<img src="benchmarks/images/decode_avg_throughput.png">
+
+| Operation   | Benchmark                       |   lbson (ops/s) |   PyMongo (ops/s) |   bson (ops/s) | lbson vs PyMongo   | lbson vs bson   |
+|-------------|---------------------------------|-----------------|-------------------|----------------|--------------------|-----------------|
+| decode      | decode_100kb_array_heavy        |            3612 |              3093 |            159 | 1.17× faster       | 22.72× faster   |
+| decode      | decode_100kb_flat               |            4963 |              8171 |            751 | 0.61× faster       | 6.61× faster    |
+| decode      | decode_100kb_nested             |           12671 |             14105 |           1559 | 0.90× faster       | 8.13× faster    |
+| decode      | decode_10kb_array_heavy         |           22837 |             19378 |           1011 | 1.18× faster       | 22.59× faster   |
+| decode      | decode_10kb_flat                |           35846 |             53960 |           4224 | 0.66× faster       | 8.49× faster    |
+| decode      | decode_10kb_nested              |           39423 |             41799 |           3855 | 0.94× faster       | 10.23× faster   |
+| decode      | decode_10mb_array_heavy         |              33 |                30 |              2 | 1.10× faster       | 16.50× faster   |
+| decode      | decode_10mb_flat                |              35 |                55 |              8 | 0.64× faster       | 4.38× faster    |
+| decode      | decode_10mb_nested              |             594 |               602 |            414 | 0.99× faster       | 1.43× faster    |
+| decode      | decode_1kb_array_heavy          |           90415 |             80836 |           4072 | 1.12× faster       | 22.20× faster   |
+| decode      | decode_1kb_flat                 |          153838 |            236909 |          20080 | 0.65× faster       | 7.66× faster    |
+| decode      | decode_1kb_nested               |          374800 |            488637 |          64522 | 0.77× faster       | 5.81× faster    |
+| decode      | decode_1mb_array_heavy          |             385 |               337 |             15 | 1.14× faster       | 25.67× faster   |
+| decode      | decode_1mb_flat                 |             488 |               797 |             80 | 0.61× faster       | 6.10× faster    |
+| decode      | decode_1mb_nested               |            4904 |              5343 |           1126 | 0.92× faster       | 4.36× faster    |
+| encode      | encode_100kb_array_heavy        |            4286 |              1389 |             91 | 3.09× faster       | 47.10× faster   |
+| encode      | encode_100kb_flat               |           18709 |              6848 |            513 | 2.73× faster       | 36.47× faster   |
+| encode      | encode_100kb_nested             |           36471 |             13399 |            985 | 2.72× faster       | 37.03× faster   |
+| encode      | encode_10kb_array_heavy         |           28458 |              9045 |            585 | 3.15× faster       | 48.65× faster   |
+| encode      | encode_10kb_flat                |           95217 |             38317 |           2837 | 2.48× faster       | 33.56× faster   |
+| encode      | encode_10kb_nested              |           93763 |             36864 |           2678 | 2.54× faster       | 35.01× faster   |
+| encode      | encode_10mb_array_heavy         |              36 |                13 |              1 | 2.77× faster       | 36.00× faster   |
+| encode      | encode_10mb_flat                |             170 |                68 |              5 | 2.50× faster       | 34.00× faster   |
+| encode      | encode_10mb_nested              |             465 |               372 |             85 | 1.25× faster       | 5.47× faster    |
+| encode      | encode_1kb_array_heavy          |          106657 |             37554 |           2434 | 2.84× faster       | 43.82× faster   |
+| encode      | encode_1kb_flat                 |          297390 |            163006 |          13583 | 1.82× faster       | 21.89× faster   |
+| encode      | encode_1kb_nested               |          481591 |            398013 |          43375 | 1.21× faster       | 11.10× faster   |
+| encode      | encode_1mb_array_heavy          |             404 |               136 |              9 | 2.97× faster       | 44.89× faster   |
+| encode      | encode_1mb_flat                 |            2043 |               732 |             55 | 2.79× faster       | 37.15× faster   |
+| encode      | encode_1mb_nested               |           13130 |              6431 |            525 | 2.04× faster       | 25.01× faster   |
+| roundtrip   | encode_decode_100kb_array_heavy |            1904 |               962 |             58 | 1.98× faster       | 32.83× faster   |
+| roundtrip   | encode_decode_100kb_flat        |            3889 |              3694 |            305 | 1.05× faster       | 12.75× faster   |
+| roundtrip   | encode_decode_100kb_nested      |            9141 |              6732 |            591 | 1.36× faster       | 15.47× faster   |
+| roundtrip   | encode_decode_10kb_array_heavy  |           12472 |              6153 |            370 | 2.03× faster       | 33.71× faster   |
+| roundtrip   | encode_decode_10kb_flat         |           25533 |             21864 |           1662 | 1.17× faster       | 15.36× faster   |
+| roundtrip   | encode_decode_10kb_nested       |           27376 |             19352 |           1537 | 1.41× faster       | 17.81× faster   |
+| roundtrip   | encode_decode_10mb_array_heavy  |              17 |                 9 |              1 | 1.89× faster       | 17.00× faster   |
+| roundtrip   | encode_decode_10mb_flat         |              28 |                30 |              3 | 0.93× faster       | 9.33× faster    |
+| roundtrip   | encode_decode_10mb_nested       |             242 |               185 |             60 | 1.31× faster       | 4.03× faster    |
+| roundtrip   | encode_decode_1kb_array_heavy   |           48360 |             25224 |           1493 | 1.92× faster       | 32.39× faster   |
+| roundtrip   | encode_decode_1kb_flat          |           97414 |             94199 |           7550 | 1.03× faster       | 12.90× faster   |
+| roundtrip   | encode_decode_1kb_nested        |          207828 |            211679 |          22397 | 0.98× faster       | 9.28× faster    |
+| roundtrip   | encode_decode_1mb_array_heavy   |             194 |                96 |              6 | 2.02× faster       | 32.33× faster   |
+| roundtrip   | encode_decode_1mb_flat          |             390 |               374 |             33 | 1.04× faster       | 11.82× faster   |
+| roundtrip   | encode_decode_1mb_nested        |            3532 |              2610 |            347 | 1.35× faster       | 10.18× faster   |
+</details>
+
 
 ## 📚 Related Projects
 

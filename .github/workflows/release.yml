@@ -103,7 +103,7 @@ jobs:
 
     environment:
       name: pypi
-      url: https://pypi.org/p/lbson
+      url: https://pypi.org/p/lbson-py
 
     steps:
       - name: 📦 Download all artifacts
